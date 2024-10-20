@@ -1,12 +1,42 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <title>Popup</title>
-    <!-- <script src="popup.js"></script> -->
-  </head>
-  <body>
-    <h1>Hello, Extension!</h1>
-    <button id="myButton">Click me</button>
-  </body>
+<head>
+  <style>
+    body {
+      width: 500px;
+      height: 700px;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+      align-items: center;
+      margin: 0;
+      padding: 20px;
+    }
+    h2 {
+      text-align: center;
+    }
+    .question {
+      margin-bottom: 20px;
+    }
+    .options {
+      list-style-type: none;
+      padding: 0;
+    }
+    .options li {
+      margin-bottom: 5px;
+    }
+    button {
+      padding: 10px 20px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <h2>Quiz</h2>
+  <div id="quiz"></div>
+  <button id="submit">Submit</button>
+
+  <script src="popup.js"></script>
   <script src="llm.js" type="module"></script>
+</body>
 </html>

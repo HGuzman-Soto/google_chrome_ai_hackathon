@@ -1,0 +1,14 @@
+1. Get this code checked in, make sure everyone can run the model 
+2. Model side
+    - Have structured inputs. Constraints like token size
+    & multiple sessions
+    - Have structured outputs
+    - Streaming the inputs, remembering long term memory
+
+3. Extension
+  - Start connecting & having it send data to the model 
+  /workout what that looks like
+
+4. UI perspective
+ - Have structured output, so it can be taken
+ & then made the display 

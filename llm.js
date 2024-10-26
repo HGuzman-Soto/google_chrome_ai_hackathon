@@ -5,9 +5,21 @@
 let PROMPT_CONTEXT = `
 Instructions: Create a multiple-choice quiz based on the provided text. Each question should have four answer options, and only one option should be correct. Provide the following structure:
 
-Instructions: A brief description of the quiz (e.g., "Answer the following questions based on the text.")
-Questions: A list of questions, each with four answer options (labeled A, B, C, and D).
-Answer Key: A list of correct answers for each question using only the option letter (e.g., 1. A, 2. C).
+- **Instructions**: A brief description of the quiz, such as "Answer the following questions based on the text."
+- **Questions**: List each question without numbering, with four answer options labeled A, B, C, and D.
+- **Answer Key**: List only the correct option letters (e.g., A, B, C, D) for each question, in order. The answer key should be at the end of the text.
+
+For example:
+**Instructions:** Answer the following questions based on the text.
+**Questions:**
+1. Which of the following is the correct order of layers?
+  A) Input, Output, Hidden
+  B) Hidden, Input, Output
+  C) Output, Input, Hidden
+  D) Hidden, Output, Input
+  
+**Answer Key:**
+1. B
 `;
 
 let MOCK_HIGHLIGHTED_TEXT = 'An RNN is a ML model';
@@ -28,25 +40,35 @@ chrome.runtime.onMessage.addListener(async (request, sender, sendResponse) => {
 async function generateQuiz(text) {
   console.log('Generating quiz...');
   if (!window.ai) {
-    console.log('AI is not available');
+    console.error('AI is not available');
     return;
   }
 
-  const { available, defaultTemperature, defaultTopK, maxTopK } =
-    await window.ai.languageModel.capabilities();
+  try {
+    const { available, defaultTemperature, defaultTopK, maxTopK } =
+      await window.ai.languageModel.capabilities();
 
-  if (available !== 'no') {
-    const session = await window.ai.languageModel.create();
-    console.log('Created a new session');
-    console.log('Prompting the model...');
+    if (available !== 'no') {
+      const session = await window.ai.languageModel.create();
+      console.log('Created a new session');
+      console.log('Prompting the model...');
 
-    const result = await session.prompt(PROMPT_CONTEXT + text);
-
-    console.log('Result:', result);
-    return result;
+      try {
+        const result = await session.prompt(PROMPT_CONTEXT + text);
+        console.log('Result:', result);
+        return result;
+      } catch (promptError) {
+        console.error('Error during model prompt:', promptError);
+        return '';
+      }
+    } else {
+      console.log('Unable to generate quiz: LLM is not available');
+      return '';
+    }
+  } catch (capabilitiesError) {
+    console.error('Error retrieving model capabilities:', capabilitiesError);
+    return '';
   }
-  console.log('Unable to generate quiz: LLM is not available');
-  return '';
 }
 
 // generateQuiz(MOCK_HIGHLIGHTED_TEXT); for testing purposes

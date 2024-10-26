@@ -36,6 +36,7 @@ const submitButton = document.getElementById('submit');
 
 function buildQuiz(quizData) {
   const output = [];
+  console.log('log in popup.js', quizData);
 
   quizData.questions.forEach((currentQuestion, questionNumber) => {
     const options = [];
@@ -68,7 +69,7 @@ function buildQuiz(quizData) {
 function showResults(quizData) {
   let score = 0;
 
-  quizData.forEach((currentQuestion, questionNumber) => {
+  quizData.answerKey.forEach((currentQuestion, questionNumber) => {
     const selector = `input[name=question${questionNumber}]:checked`;
     const userAnswer = (document.querySelector(selector) || {}).value;
 

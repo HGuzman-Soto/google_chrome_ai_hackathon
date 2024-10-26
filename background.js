@@ -37,9 +37,13 @@ chrome.runtime.onMessage.addListener(async (request, sender, sendResponse) => {
     // const result = await generateQuiz(request.quizData);
 
     if (request.quizData) {
+      // Parse the quiz data
+      quiz_sections = parseQuizText(request.quizData);
+      console.log('Quiz sections:', quiz_sections);
+
       // Store the quiz data in local storage
-      chrome.storage.local.set({ quizResult: request.quizData }, () => {
-        console.log('Quiz result stored:', request.quizData);
+      chrome.storage.local.set({ quizResult: quiz_sections }, () => {
+        console.log('Quiz result stored:', quiz_sections);
       });
 
       // Optionally, you can notify the popup or content script that the data is ready
@@ -50,4 +54,55 @@ chrome.runtime.onMessage.addListener(async (request, sender, sendResponse) => {
 
 function logSelectedText(selectedText) {
   console.log('Selected text:', selectedText);
+}
+
+function parseQuizText(quizText) {
+  const sections = {
+    instructions: '',
+    questions: [],
+    answerKey: [],
+  };
+
+  // Split the text into lines
+  const lines = quizText.split('\n');
+
+  let currentSection = '';
+
+  lines.forEach((line) => {
+    // Check for section headers to identify each part
+    if (line.startsWith('**Instructions:**')) {
+      currentSection = 'instructions';
+      sections.instructions = line.replace('**Instructions:**', '').trim();
+    } else if (line.startsWith('**Questions:**')) {
+      currentSection = 'questions';
+    } else if (line.startsWith('**Answer Key:**')) {
+      currentSection = 'answerKey';
+    } else if (currentSection === 'questions' && line.trim()) {
+      // Parse questions and options
+      const questionMatch = line.match(/^\d+\.\s(.+)/);
+      const optionMatch = line.match(/^\s*(A|B|C|D)\)\s(.+)/);
+
+      if (questionMatch) {
+        // Add a new question with the parsed question text
+        sections.questions.push({
+          question: questionMatch[1].trim(),
+          options: {},
+        });
+      } else if (optionMatch) {
+        // Add options to the last question in the array
+        const lastQuestion = sections.questions[sections.questions.length - 1];
+        if (lastQuestion) {
+          lastQuestion.options[optionMatch[1]] = optionMatch[2].trim();
+        }
+      }
+    } else if (currentSection === 'answerKey' && line.trim()) {
+      // Parse answer key items
+      const answerMatch = line.match(/^\d+\.\s([A-D])/);
+      if (answerMatch) {
+        sections.answerKey.push(answerMatch[1]);
+      }
+    }
+  });
+
+  return sections;
 }

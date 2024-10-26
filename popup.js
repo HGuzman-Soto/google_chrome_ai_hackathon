@@ -1,45 +1,51 @@
 const quizData = [
   {
-    question: "What is the capital of France?",
-    options: ["Berlin", "London", "Paris", "Madrid"],
-    correct: "Paris"
+    question: 'What is the capital of France?',
+    options: ['Berlin', 'London', 'Paris', 'Madrid'],
+    correct: 'Paris',
   },
   {
-    question: "Which planet is known as the Red Planet?",
-    options: ["Earth", "Mars", "Jupiter", "Venus"],
-    correct: "Mars"
+    question: 'Which planet is known as the Red Planet?',
+    options: ['Earth', 'Mars', 'Jupiter', 'Venus'],
+    correct: 'Mars',
   },
   {
     question: "Who wrote 'Hamlet'?",
-    options: ["Charles Dickens", "William Shakespeare", "Mark Twain", "Leo Tolstoy"],
-    correct: "William Shakespeare"
+    options: [
+      'Charles Dickens',
+      'William Shakespeare',
+      'Mark Twain',
+      'Leo Tolstoy',
+    ],
+    correct: 'William Shakespeare',
   },
   {
-    question: "What is the largest mammal?",
-    options: ["Elephant", "Blue Whale", "Giraffe", "Great White Shark"],
-    correct: "Blue Whale"
+    question: 'What is the largest mammal?',
+    options: ['Elephant', 'Blue Whale', 'Giraffe', 'Great White Shark'],
+    correct: 'Blue Whale',
   },
   {
-    question: "What is the boiling point of water?",
-    options: ["9C", "50C", "100C", "150C"],
-    correct: "100C"
-  }
+    question: 'What is the boiling point of water?',
+    options: ['9C', '50C', '100C', '150C'],
+    correct: '100C',
+  },
 ];
 
 const quizContainer = document.getElementById('quiz');
 const submitButton = document.getElementById('submit');
 
-function buildQuiz() {
+function buildQuiz(quizData) {
   const output = [];
 
-  quizData.forEach((currentQuestion, questionNumber) => {
+  quizData.questions.forEach((currentQuestion, questionNumber) => {
     const options = [];
 
-    currentQuestion.options.forEach(option => {
+    // Generate each option for the question
+    Object.entries(currentQuestion.options).forEach(([key, option]) => {
       options.push(
         `<li>
           <label>
-            <input type="radio" name="question${questionNumber}" value="${option}">
+            <input type="radio" name="question${questionNumber}" value="${key}">
             ${option}
           </label>
         </li>`
@@ -59,14 +65,14 @@ function buildQuiz() {
   quizContainer.innerHTML = output.join('');
 }
 
-function showResults() {
+function showResults(quizData) {
   let score = 0;
 
   quizData.forEach((currentQuestion, questionNumber) => {
     const selector = `input[name=question${questionNumber}]:checked`;
     const userAnswer = (document.querySelector(selector) || {}).value;
 
-    if (userAnswer === currentQuestion.correct) {
+    if (userAnswer === quizData.answerKey[questionNumber]) {
       score++;
     }
   });
@@ -74,6 +80,20 @@ function showResults() {
   alert(`You scored ${score} out of ${quizData.length}`);
 }
 
-buildQuiz();
+// Load quiz data from Chrome storage and initialize the quiz
+chrome.storage.local.get(['quizResult'], (result) => {
+  if (result.quizResult) {
+    buildQuiz(result.quizResult); // Populate the quiz with stored data
+  } else {
+    quizContainer.innerHTML = '<p>No quiz data available.</p>';
+  }
+});
 
-submitButton.addEventListener('click', showResults);
+// Add event listener to submit button
+submitButton.addEventListener('click', () => {
+  chrome.storage.local.get(['quizResult'], (result) => {
+    if (result.quizResult) {
+      showResults(result.quizResult); // Show results using stored data
+    }
+  });
+});

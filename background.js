@@ -30,19 +30,20 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
 
 // Listen for messages from the content script after generating a quiz
 chrome.runtime.onMessage.addListener(async (request, sender, sendResponse) => {
+  console.log('Received message:', request);
   if (request.type === 'quizResult') {
     // Log the quiz data
     console.log('Quiz data:', request.quizData);
-    const result = await generateQuiz(request.quizData);
+    // const result = await generateQuiz(request.quizData);
 
-    if (result) {
+    if (request.quizData) {
       // Store the quiz data in local storage
-      chrome.storage.local.set({ quizResult: result }, () => {
-        console.log('Quiz result stored:', result);
+      chrome.storage.local.set({ quizResult: request.quizData }, () => {
+        console.log('Quiz result stored:', request.quizData);
       });
 
       // Optionally, you can notify the popup or content script that the data is ready
-      chrome.runtime.sendMessage({ type: 'quizResult', quizData: result });
+      // chrome.runtime.sendMessage({ type: 'quizResult', quizData: result });
     }
   }
 });

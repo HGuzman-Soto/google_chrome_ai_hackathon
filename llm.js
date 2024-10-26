@@ -17,9 +17,16 @@ For example:
   B) Hidden, Input, Output
   C) Output, Input, Hidden
   D) Hidden, Output, Input
-  
+
+2. What is the activation function used in neural networks?
+  A) ReLU
+  B) Sigmoid
+  C) Tanh
+  D) Linear
+
 **Answer Key:**
 1. B
+2. A
 `;
 
 let MOCK_HIGHLIGHTED_TEXT = 'An RNN is a ML model';

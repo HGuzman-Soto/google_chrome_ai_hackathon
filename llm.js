@@ -2,7 +2,14 @@
 // Todo with Huzaifa, find best way to have an event listener for selected text
 // which sends data to this function to parse and send to the LLM API
 
-let PROMPT_CONTEXT = 'Generate a multiple choice quiz with 4 possibilities: ';
+let PROMPT_CONTEXT = `
+Instructions: Create a multiple-choice quiz based on the provided text. Each question should have four answer options, and only one option should be correct. Provide the following structure:
+
+Instructions: A brief description of the quiz (e.g., "Answer the following questions based on the text.")
+Questions: A list of questions, each with four answer options (labeled A, B, C, and D).
+Answer Key: A list of correct answers for each question using only the option letter (e.g., 1. A, 2. C).
+`;
+
 let MOCK_HIGHLIGHTED_TEXT = 'An RNN is a ML model';
 
 chrome.runtime.onMessage.addListener(async (request, sender, sendResponse) => {

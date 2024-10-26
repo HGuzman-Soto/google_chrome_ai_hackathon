@@ -5,12 +5,6 @@ chrome.runtime.onInstalled.addListener(() => {
     title: 'Check for Understanding',
     contexts: ['selection'], // Only show this option when text is selected
   });
-
-  chrome.contextMenus.create({
-    id: 'logHighlightedTextAndPageData',
-    title: 'Log Highlighted Text and Page Data',
-    contexts: ['selection'], // Only show this menu when text is selected
-  });
 });
 
 // Handle the context menu click event
@@ -53,34 +47,6 @@ chrome.runtime.onMessage.addListener(async (request, sender, sendResponse) => {
   }
 });
 
-//* huzaifa test code *//
-
 function logSelectedText(selectedText) {
   console.log('Selected text:', selectedText);
 }
-
-chrome.contextMenus.onClicked.addListener((info, tab) => {
-  if (
-    info.menuItemId === 'logHighlightedTextAndPageData' &&
-    info.selectionText
-  ) {
-    // Send a message to the content script to collect page data
-    chrome.tabs.sendMessage(
-      tab.id,
-      {
-        type: 'collectData',
-        highlightedText: info.selectionText, // Send the highlighted text with the message
-      },
-      (response) => {
-        // Combine highlighted text with page data
-        const dataToSend = {
-          highlightedText: info.selectionText,
-          pageData: response.data,
-        };
-
-        // Log the combined data (or send to an API in the future)
-        console.log('Data to send:', dataToSend);
-      }
-    );
-  }
-});

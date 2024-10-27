@@ -78,7 +78,7 @@ function showResults(quizData) {
     }
   });
 
-  alert(`You scored ${score} out of ${quizData.length}`);
+  alert(`You scored ${score} out of ${quizData.questions.length}`);
 }
 
 // Load quiz data from Chrome storage and initialize the quiz

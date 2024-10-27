@@ -70,12 +70,21 @@ function parseQuizText(quizText) {
 
   lines.forEach((line) => {
     // Check for section headers to identify each part
-    if (line.startsWith('**Instructions:**')) {
+    if (
+      line.startsWith('**Instructions:**') ||
+      line.startsWith('Instructions:')
+    ) {
       currentSection = 'instructions';
       sections.instructions = line.replace('**Instructions:**', '').trim();
-    } else if (line.startsWith('**Questions:**')) {
+    } else if (
+      line.startsWith('**Questions:**') ||
+      line.startsWith('Questions:')
+    ) {
       currentSection = 'questions';
-    } else if (line.startsWith('**Answer Key:**')) {
+    } else if (
+      line.startsWith('**Answer Key:**') ||
+      line.startsWith('Answer Key:')
+    ) {
       currentSection = 'answerKey';
     } else if (currentSection === 'questions' && line.trim()) {
       // Parse questions and options

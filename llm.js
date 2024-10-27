@@ -29,7 +29,88 @@ For example:
 2. A
 `;
 
-let MOCK_HIGHLIGHTED_TEXT = 'An RNN is a ML model';
+let session;
+let sessionTimeout;
+
+async function getOrCreateSession() {
+  if (session) {
+    console.log('Reusing existing session');
+    resetSessionTimeout(); // Reset the timeout whenever the session is reused
+    return session;
+  }
+
+  console.log('Creating a new session');
+  session = await window.ai.languageModel.create({
+    systemPrompt: PROMPT_CONTEXT,
+  });
+
+  return session;
+}
+
+// / Reset the session timeout to destroy the session after inactivity
+function resetSessionTimeout() {
+  // Clear any existing timeout
+  if (sessionTimeout) clearTimeout(sessionTimeout);
+
+  // Set a timeout to destroy the session after 5 minutes of inactivity
+  sessionTimeout = setTimeout(() => {
+    if (session) {
+      console.log(
+        'Session inactive for 5 minutes. Destroying session to free resources.'
+      );
+      session.destroy();
+      session = null; // Clear the session reference
+    }
+  }, 5 * 60 * 1000); // 5 minutes in milliseconds
+}
+
+// Exception handler function
+function handleException(error, context) {
+  if (error instanceof DOMException) {
+    switch (error.name) {
+      case 'InvalidStateError':
+        console.error(`${context}: Invalid state error - ${error.message}`);
+        if (context.includes('Session')) {
+          console.log('Attempting to create a new session...');
+          session = null;
+        }
+        break;
+
+      case 'OperationError':
+        console.error(
+          `${context}: Model execution service is not available - ${error.message}`
+        );
+        console.log('Relaunch Chrome and try again.');
+        break;
+
+      case 'UnknownError':
+        console.error(`${context}: Unknown error - ${error.message}`);
+        console.log(
+          'Retrying may resolve the issue. Report a technical issue if it persists.'
+        );
+        break;
+
+      case 'NotSupportedError':
+        console.error(`${context}: Unsupported operation - ${error.message}`);
+        break;
+
+      case 'NotReadableError':
+        console.error(`${context}: Response is disabled - ${error.message}`);
+        break;
+
+      case 'AbortError':
+        console.error(`${context}: Request was canceled - ${error.message}`);
+        break;
+
+      default:
+        console.error(`${context}: Unexpected DOMException - ${error.message}`);
+    }
+  } else {
+    console.error(
+      `${context}: Non-DOMException encountered - ${error.message}`
+    );
+  }
+}
 
 chrome.runtime.onMessage.addListener(async (request, sender, sendResponse) => {
   console.log('calling generateQuiz');
@@ -52,21 +133,32 @@ async function generateQuiz(text) {
   }
 
   try {
-    const { available, defaultTemperature, defaultTopK, maxTopK } =
-      await window.ai.languageModel.capabilities();
-
+    const { available } = await window.ai.languageModel.capabilities();
     if (available !== 'no') {
-      const session = await window.ai.languageModel.create();
-      console.log('Created a new session');
-      console.log('Prompting the model...');
+      let session = await getOrCreateSession();
+
+      // Check tokens left before sending the prompt
+      if (session.tokensLeft < 1024) {
+        console.log(
+          `Tokens low: ${session.tokensLeft} left. Creating a new session.`
+        );
+        session.destroy(); // Destroy the current session
+        session = await getOrCreateSession(); // Create a new session if tokens are low
+      } else {
+        console.log(
+          `${session.tokensSoFar}/${session.maxTokens} (${session.tokensLeft} tokens left)`
+        );
+      }
 
       try {
         const result = await session.prompt(PROMPT_CONTEXT + text);
         console.log('Result:', result);
         return result;
       } catch (promptError) {
-        console.error('Error during model prompt:', promptError);
-        return '';
+        handleException(promptError, 'Error during model prompt');
+        session = null;
+        const newSession = await getOrCreateSession();
+        return newSession ? await newSession.prompt(PROMPT_CONTEXT + text) : '';
       }
     } else {
       console.log('Unable to generate quiz: LLM is not available');
@@ -77,5 +169,3 @@ async function generateQuiz(text) {
     return '';
   }
 }
-
-// generateQuiz(MOCK_HIGHLIGHTED_TEXT); for testing purposes

@@ -67,18 +67,27 @@ function buildQuiz(quizData) {
 }
 
 function showResults(quizData) {
-  let score = 0;
-
-  quizData.answerKey.forEach((currentQuestion, questionNumber) => {
+  quizData.questions.forEach((currentQuestion, questionNumber) => {
     const selector = `input[name=question${questionNumber}]:checked`;
-    const userAnswer = (document.querySelector(selector) || {}).value;
+    const userAnswer = document.querySelector(selector);
+    const correctAnswer = quizData.answerKey[questionNumber];
+    const options = document.querySelectorAll(
+      `input[name=question${questionNumber}]`
+    );
 
-    if (userAnswer === quizData.answerKey[questionNumber]) {
-      score++;
-    }
+    // Highlight each option based on correctness
+    options.forEach((option) => {
+      if (option.value === correctAnswer) {
+        // Correct answer highlighted in green
+        option.parentElement.style.color = 'green';
+      } else if (userAnswer && option === userAnswer && userAnswer.value !== correctAnswer) {
+        // Incorrect answer highlighted in red
+        option.parentElement.style.color = 'red';
+      }
+    });
   });
 
-  alert(`You scored ${score} out of ${quizData.questions.length}`);
+  alert(`Quiz completed! Check the highlights for correct and incorrect answers.`);
 }
 
 // Load quiz data from Chrome storage and initialize the quiz

@@ -113,14 +113,22 @@ function handleException(error, context) {
 }
 
 chrome.runtime.onMessage.addListener(async (request, sender, sendResponse) => {
-  console.log('calling generateQuiz');
+  console.log('Received message in llm.js:', request);
   if (request.type === 'generateQuiz') {
+    console.log('calling generateQuiz');
+
     const result = await generateQuiz(request.text);
 
     // Send the result back to the background script
     chrome.runtime.sendMessage({ type: 'quizResult', quizData: result });
+  } else if (request.type === 'generateSummary') {
+    console.log('calling generateSummary');
+    const result = await generateSummary(request.text);
+
+    // Send the result back to the background script
+    chrome.runtime.sendMessage({ type: 'summaryResult', summaryData: result });
   }
-  console.log('done calling generateQuiz');
+  console.log('done calling');
 });
 
 // 2. Function that sends the text to the LLM API & generates 1 quiz question with 4 multiple choice answers
@@ -168,4 +176,75 @@ async function generateQuiz(text) {
     console.error('Error retrieving model capabilities:', capabilitiesError);
     return '';
   }
+}
+
+// Uses Summarize API to generate a summary of the text for quiz input
+let SUMMARY_CONTEXT = `
+Instructions: Generate a concise summary of the provided text, focusing on the main points and key details. The summary should be in complete sentences and written clearly for easy understanding.
+`;
+let summarizer;
+let summarizerTimeout;
+
+async function generateSummary(text) {
+  console.log('Generating summary...');
+  if (!window.ai) {
+    console.error('AI is not available');
+    return;
+  }
+
+  try {
+    const canSummarize = await window.ai.summarizer.capabilities();
+    if (canSummarize && canSummarize.available !== 'no') {
+      let summarizer = await getOrCreateSummarizer();
+
+      try {
+        const result = await summarizer.summarize(text);
+        console.log('Summary Result:', result);
+        return result;
+      } catch (summaryError) {
+        handleException(summaryError, 'Error during summarization');
+        summarizer = null;
+        const newSummarizer = await getOrCreateSummarizer();
+        return newSummarizer ? await newSummarizer.summarize(text) : '';
+      }
+    } else {
+      console.log('Unable to generate summary: Summarizer is not available');
+      return '';
+    }
+  } catch (capabilitiesError) {
+    console.error(
+      'Error retrieving summarizer capabilities:',
+      capabilitiesError
+    );
+    return '';
+  }
+}
+
+// Reuse or create a new summarizer session
+async function getOrCreateSummarizer() {
+  if (summarizer) {
+    console.log('Reusing existing summarizer');
+    resetSummarizerTimeout(); // Reset the timeout for the summarizer session
+    return summarizer;
+  }
+
+  console.log('Creating a new summarizer');
+  summarizer = await window.ai.summarizer.create();
+
+  return summarizer;
+}
+
+// Reset the summarizer timeout to destroy the summarizer after inactivity
+function resetSummarizerTimeout() {
+  if (summarizerTimeout) clearTimeout(summarizerTimeout);
+
+  summarizerTimeout = setTimeout(() => {
+    if (summarizer) {
+      console.log(
+        'Summarizer inactive for 5 minutes. Destroying summarizer to free resources.'
+      );
+      summarizer.destroy();
+      summarizer = null;
+    }
+  }, 5 * 60 * 1000);
 }

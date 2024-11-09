@@ -18,20 +18,38 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
       args: [info.selectionText],
     });
 
-    // Generate a quiz question with 4 multiple choice answers
-    // Call LLM API
-    // Forward the request to content.js in the active tab
+    /// Take the selected text and send it to the Summarizer API to generate a summary of the text
+    // Step 1: Send text to generate a summary
     chrome.tabs.sendMessage(tab.id, {
-      type: 'generateQuiz',
+      type: 'generateSummary',
       text: info.selectionText,
     });
+
+    // // Generate a quiz question with 4 multiple choice answers
+    // // Call LLM API
+    // // Forward the request to content.js in the active tab
+    // chrome.tabs.sendMessage(tab.id, {
+    //   type: 'generateQuiz',
+    //   text: info.selectionText,
+    // });
   }
 });
 
 // Listen for messages from the content script after generating a quiz
 chrome.runtime.onMessage.addListener(async (request, sender, sendResponse) => {
   console.log('Received message:', request);
+
+  if (request.type === 'summaryResult') {
+    // Step 2: Summary received, now generate the quiz
+    console.log('Summary data received:', request.summaryData);
+    chrome.tabs.sendMessage(sender.tab.id, {
+      type: 'generateQuiz',
+      text: request.summaryData,
+    });
+  }
+
   if (request.type === 'quizResult') {
+    // Step 3: Quiz result received, parse and store it
     // Log the quiz data
     console.log('Quiz data:', request.quizData);
     // const result = await generateQuiz(request.quizData);

@@ -11,6 +11,12 @@ chrome.runtime.onInstalled.addListener(() => {
 // Sends a message to content script (llm.js) to generate a quiz
 chrome.contextMenus.onClicked.addListener((info, tab) => {
   if (info.menuItemId === 'checkForUnderstanding' && info.selectionText) {
+    // Send a message to content script to open the side panel
+    chrome.tabs.sendMessage(tab.id, {
+      type: 'openSidePanel',
+      text: info.selectionText,
+    });
+
     // Log the selected text for testing purposes
     chrome.scripting.executeScript({
       target: { tabId: tab.id },

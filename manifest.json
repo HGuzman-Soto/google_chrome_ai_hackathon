@@ -3,7 +3,7 @@
   "name": "Check for understanding extensions",
   "version": "1.0",
   "description": "Highlight text and analyze it using the LLM API",
-  "permissions": ["contextMenus", "activeTab", "scripting", "storage"],
+  "permissions": ["contextMenus", "activeTab", "scripting", "storage", "sidePanel"],
   "background": {
     "service_worker": "background.js"
   },
@@ -14,7 +14,7 @@
   "content_scripts": [
     {
       "matches": ["<all_urls>"],
-      "js": ["content.js", "llm.js"]
+      "js": ["content.js", "llm.js", "sidepanel.js"]
     }
   ],
   "icons": {

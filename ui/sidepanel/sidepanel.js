@@ -1,25 +1,6 @@
 // sidepanel.js
 import displayQuiz from './quiz.js';
 
-// Add CSS styles dynamically for correct and incorrect answers
-function addQuizStyles() {
-  const styleElement = document.createElement('style');
-  styleElement.innerHTML = `
-    .correct {
-      background-color: #d4edda; /* Light green background */
-      color: #155724; /* Dark green text */
-    }
-    .incorrect {
-      background-color: #f8d7da; /* Light red background */
-      color: #721c24; /* Dark red text */
-    }
-  `;
-  document.head.appendChild(styleElement);
-}
-
-// Call this function when opening the side panel
-addQuizStyles();
-
 // Listen for messages to open the side panel
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.type === 'openSidePanel') {

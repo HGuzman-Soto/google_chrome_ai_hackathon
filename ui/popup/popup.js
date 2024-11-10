@@ -80,14 +80,20 @@ function showResults(quizData) {
       if (option.value === correctAnswer) {
         // Correct answer highlighted in green
         option.parentElement.style.color = 'green';
-      } else if (userAnswer && option === userAnswer && userAnswer.value !== correctAnswer) {
+      } else if (
+        userAnswer &&
+        option === userAnswer &&
+        userAnswer.value !== correctAnswer
+      ) {
         // Incorrect answer highlighted in red
         option.parentElement.style.color = 'red';
       }
     });
   });
 
-  alert(`Quiz completed! Check the highlights for correct and incorrect answers.`);
+  alert(
+    `Quiz completed! Check the highlights for correct and incorrect answers.`
+  );
 }
 
 // Load quiz data from Chrome storage and initialize the quiz

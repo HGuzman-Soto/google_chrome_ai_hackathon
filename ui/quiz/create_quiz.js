@@ -1,4 +1,4 @@
-import { handleQuizSubmission } from './quiz.js';
+import { handleQuizSubmission } from './handle_submission.js';
 
 // Function to display quiz data
 export function displayQuiz(quizData) {

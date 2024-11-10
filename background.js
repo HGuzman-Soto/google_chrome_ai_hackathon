@@ -3,19 +3,30 @@ chrome.runtime.onInstalled.addListener(() => {
   chrome.contextMenus.create({
     id: 'checkForUnderstanding',
     title: 'Check for Understanding',
-    contexts: ['selection'], // Only show this option when text is selected
+    contexts: ['selection', 'all'], // Only show this option when text is selected
   });
+});
+
+// Allows users to open the side panel by clicking on the action toolbar icon
+chrome.tabs.onUpdated.addListener(async (tabId, info, tab) => {
+  await chrome.sidePanel.setOptions({
+    tabId,
+    path: 'ui/sidepanel/sidepanel.html',
+    enabled: true,
+  });
+
+  chrome.sidePanel
+    .setPanelBehavior({ openPanelOnActionClick: true })
+    .catch((error) => console.error(error));
 });
 
 // Handle the context menu click event
 // Sends a message to content script (llm.js) to generate a quiz
 chrome.contextMenus.onClicked.addListener((info, tab) => {
   if (info.menuItemId === 'checkForUnderstanding' && info.selectionText) {
-    // Send a message to content script to open the side panel
-    chrome.tabs.sendMessage(tab.id, {
-      type: 'openSidePanel',
-      text: info.selectionText,
-    });
+    // Open the side panel when checking for understanding
+    // This will open the panel in all the pages on the current window.
+    chrome.sidePanel.open({ windowId: tab.windowId });
 
     // Log the selected text for testing purposes
     chrome.scripting.executeScript({
@@ -70,8 +81,12 @@ chrome.runtime.onMessage.addListener(async (request, sender, sendResponse) => {
         console.log('Quiz result stored:', quiz_sections);
       });
 
-      // Optionally, you can notify the popup or content script that the data is ready
-      // chrome.runtime.sendMessage({ type: 'quizResult', quizData: result });
+      console.log('sending message to sidepanel.js to update ui');
+      // Send a message to the UI to update the quiz
+      chrome.tabs.sendMessage(sender.tab.id, {
+        type: 'quizUpdated',
+      });
+      console.log('sent message to sidepanel.js to update ui');
     }
   }
 });

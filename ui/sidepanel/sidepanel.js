@@ -1,9 +1,11 @@
 // sidepanel.js
-import displayQuiz from './quiz.js';
+import { displayQuiz } from '../quiz/create_quiz.js';
 
-// Listen for messages to open the side panel
-chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-  if (request.type === 'openSidePanel') {
+// IDK if this is still being used? - Listen for new quiz data being stored
+chrome.runtime.onMessage.addListener(async (request, sender, sendResponse) => {
+  console.log('Received message in sidePanel.js:', request);
+  if (request.type === 'quizUpdated') {
+    // Refresh the side panel with the new quiz data
     openSidePanel();
   }
 });
@@ -38,11 +40,6 @@ function openSidePanel() {
     <div id="quizContainer">Loading quiz...</div>
   `;
 
-  // Add event listener to close the side panel
-  document.getElementById('closeSidePanel').addEventListener('click', () => {
-    sidePanel.remove();
-  });
-
   // Retrieve and display the new quiz data
   chrome.storage.local.get(['quizResult'], (result) => {
     const quizData = result.quizResult;
@@ -54,11 +51,3 @@ function openSidePanel() {
     }
   });
 }
-
-// Listen for new quiz data being stored
-chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-  if (request.type === 'quizUpdated') {
-    // Open or refresh the side panel with the new quiz data
-    openSidePanel();
-  }
-});

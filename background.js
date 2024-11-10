@@ -81,8 +81,12 @@ chrome.runtime.onMessage.addListener(async (request, sender, sendResponse) => {
         console.log('Quiz result stored:', quiz_sections);
       });
 
-      // Optionally, you can notify the popup or content script that the data is ready
-      // chrome.runtime.sendMessage({ type: 'quizResult', quizData: result });
+      console.log('sending message to sidepanel.js to update ui');
+      // Send a message to the UI to update the quiz
+      chrome.tabs.sendMessage(sender.tab.id, {
+        type: 'quizUpdated',
+      });
+      console.log('sent message to sidepanel.js to update ui');
     }
   }
 });

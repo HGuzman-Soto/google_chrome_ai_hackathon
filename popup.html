@@ -1,40 +1,19 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <style>
-      body {
-        width: 500px;
-        height: 700px;
-        display: flex;
-        flex-direction: column;
-        justify-content: flex-start;
-        align-items: center;
-        margin: 0;
-        padding: 20px;
-      }
-      h2 {
-        text-align: center;
-      }
-      .question {
-        margin-bottom: 20px;
-      }
-      .options {
-        list-style-type: none;
-        padding: 0;
-      }
-      .options li {
-        margin-bottom: 5px;
-      }
-      button {
-        padding: 10px 20px;
-        cursor: pointer;
-      }
-    </style>
+    <link rel="stylesheet" href="styles.css">
   </head>
   <body>
     <h2>Quiz</h2>
     <div id="quiz"></div>
     <button id="submit">Submit</button>
+
+    <!-- Score Summary Section -->
+    <div id="scoreSummary" style="display: none; text-align: center; margin-top: 20px;">
+      <h2>Your Score</h2>
+      <p id="scoreText"></p>
+      <button id="reviewAnswers">Review Answers</button>
+    </div>
 
     <script src="popup.js"></script>
   </body>

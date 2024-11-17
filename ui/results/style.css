@@ -1,0 +1,37 @@
+/* Styling for the score box */
+.score-box {
+    border: 2px solid #4CAF50;
+    background-color: #f9f9f9;
+    padding: 20px;
+    margin: 20px auto;
+    font-size: 20px;
+    font-weight: bold;
+    text-align: center;
+    color: #333;
+    border-radius: 8px;
+  }
+  
+  /* Styling for questions and answers */
+  .results-container .question {
+    margin-bottom: 20px;
+  }
+  
+  .results-container ul {
+    list-style-type: none;
+    padding: 0;
+  }
+  
+  .results-container li {
+    margin-bottom: 5px;
+  }
+  
+  /* Highlight correct and incorrect answers */
+  .results-container li.correct {
+    color: green;
+    font-weight: bold;
+  }
+  
+  .results-container li.incorrect {
+    color: red;
+    font-style: italic;
+  }

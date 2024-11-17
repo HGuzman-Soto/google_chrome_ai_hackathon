@@ -14,7 +14,7 @@ function buildQuiz(quizData) {
         `<li>
           <label>
             <input type="radio" name="question${questionNumber}" value="${key}">
-            ${option}
+            ${key}) ${option}
           </label>
         </li>`
       );
@@ -22,7 +22,7 @@ function buildQuiz(quizData) {
 
     output.push(
       `<div class="question">
-        <p>${currentQuestion.question}</p>
+        <p>${questionNumber + 1}. ${currentQuestion.question}</p>
         <ul class="options">
           ${options.join('')}
         </ul>

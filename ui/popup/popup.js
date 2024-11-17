@@ -1,36 +1,3 @@
-const quizData = [
-  {
-    question: 'What is the capital of France?',
-    options: ['Berlin', 'London', 'Paris', 'Madrid'],
-    correct: 'Paris',
-  },
-  {
-    question: 'Which planet is known as the Red Planet?',
-    options: ['Earth', 'Mars', 'Jupiter', 'Venus'],
-    correct: 'Mars',
-  },
-  {
-    question: "Who wrote 'Hamlet'?",
-    options: [
-      'Charles Dickens',
-      'William Shakespeare',
-      'Mark Twain',
-      'Leo Tolstoy',
-    ],
-    correct: 'William Shakespeare',
-  },
-  {
-    question: 'What is the largest mammal?',
-    options: ['Elephant', 'Blue Whale', 'Giraffe', 'Great White Shark'],
-    correct: 'Blue Whale',
-  },
-  {
-    question: 'What is the boiling point of water?',
-    options: ['9C', '50C', '100C', '150C'],
-    correct: '100C',
-  },
-];
-
 const quizContainer = document.getElementById('quiz');
 const submitButton = document.getElementById('submit');
 
@@ -96,20 +63,37 @@ function showResults(quizData) {
   );
 }
 
-// Load quiz data from Chrome storage and initialize the quiz
-chrome.storage.local.get(['quizResult'], (result) => {
-  if (result.quizResult) {
-    buildQuiz(result.quizResult); // Populate the quiz with stored data
-  } else {
-    quizContainer.innerHTML = '<p>No quiz data available.</p>';
-  }
-});
+// Function to display highlighted/selected text
+function displaySelectedText(text) {
+  const quizContainer = document.getElementById('quiz');
+  if (quizContainer) {
+    // Truncate text if it's longer than 600 characters
+    const truncatedText =
+      text.length > 600 ? text.substring(0, 600) + '...' : text;
 
-// Add event listener to submit button
-submitButton.addEventListener('click', () => {
-  chrome.storage.local.get(['quizResult'], (result) => {
-    if (result.quizResult) {
-      showResults(result.quizResult); // Show results using stored data
-    }
-  });
+    quizContainer.innerHTML = `
+      <div class="highlighted-text">
+        <h3>Selected Text:</h3>
+        <div class="text-content">${truncatedText}</div>
+        <div class="text-stats">Characters: ${text.length}</div>
+        <div class="loading-message">Generating quiz...</div>
+      </div>
+    `;
+  }
+}
+
+// Modify your message listener to handle the highlighted text
+chrome.runtime.onMessage.addListener(async (request, sender, sendResponse) => {
+  console.log('Received message in popup.js:', request);
+  if (request.type === 'displaySelectedText') {
+    displaySelectedText(request.text);
+  } else if (request.type === 'quizUpdated') {
+    // Your existing quiz display logic
+    chrome.storage.local.get(['quizResult'], (result) => {
+      const quizData = result.quizResult;
+      if (quizData) {
+        buildQuiz(quizData);
+      }
+    });
+  }
 });

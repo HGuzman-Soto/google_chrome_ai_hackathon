@@ -1,5 +1,6 @@
 const quizContainer = document.getElementById('quiz');
-const submitButton = document.getElementById('submit');
+const generateQuizSubmitButton = document.getElementById('generate_quiz');
+let selectedText = '';
 
 function buildQuiz(quizData) {
   const output = [];
@@ -67,6 +68,9 @@ function showResults(quizData) {
 function displaySelectedText(text) {
   const quizContainer = document.getElementById('quiz');
   if (quizContainer) {
+    // cache selected text in-memory
+    selectedText = text;
+
     // Truncate text if it's longer than 600 characters
     const truncatedText =
       text.length > 600 ? text.substring(0, 600) + '...' : text;
@@ -96,4 +100,13 @@ chrome.runtime.onMessage.addListener(async (request, sender, sendResponse) => {
       }
     });
   }
+});
+
+generateQuizSubmitButton.addEventListener('click', () => {
+  console.log('Generate Quiz button clicked');
+  // Send a message to the background script
+  chrome.runtime.sendMessage({
+    type: 'generateSummary',
+    text: selectedText, // pass selected text from in-memory
+  });
 });

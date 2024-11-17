@@ -1,3 +1,5 @@
+let lastActiveTabId = null;
+
 // Create a context menu item for logging highlighted text and page data
 chrome.runtime.onInstalled.addListener(() => {
   chrome.contextMenus.create({
@@ -25,10 +27,11 @@ chrome.tabs.onUpdated.addListener(async (tabId, info, tab) => {
 // Sends a message to content script (llm.js) to generate a quiz
 chrome.contextMenus.onClicked.addListener((info, tab) => {
   if (info.menuItemId === 'checkForUnderstanding' && info.selectionText) {
+    lastActiveTabId = tab.id;
+
     // Open the side panel when checking for understanding
     // This will open the panel in all the pages on the current window.
     chrome.sidePanel.open({ windowId: tab.windowId });
-
     // Log the selected text for testing purposes
     chrome.scripting.executeScript({
       target: { tabId: tab.id },
@@ -43,10 +46,10 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
 
     /// Take the selected text and send it to the Summarizer API to generate a summary of the text
     // Step 1: Send text to generate a summary
-    chrome.tabs.sendMessage(tab.id, {
-      type: 'generateSummary',
-      text: info.selectionText,
-    });
+    // chrome.tabs.sendMessage(tab.id, {
+    //   type: 'generateSummary',
+    //   text: info.selectionText,
+    // });
 
     // // Generate a quiz question with 4 multiple choice answers
     // // Call LLM API
@@ -62,10 +65,25 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
 chrome.runtime.onMessage.addListener(async (request, sender, sendResponse) => {
   console.log('Received message:', request);
 
+  // User clicked on the Generate Quiz button
+  if (request.type === 'generateSummary') {
+    if (!lastActiveTabId) {
+      console.error('No active tab ID available. Cannot generate summary.');
+      sendResponse({ error: 'No active tab ID' });
+      return;
+    }
+    // Step 1: Send text to generate a summary
+    console.log('Generating summary...');
+    chrome.tabs.sendMessage(lastActiveTabId, {
+      type: 'generateSummary',
+      text: request.text,
+    });
+  }
+
   if (request.type === 'summaryResult') {
     // Step 2: Summary received, now generate the quiz
     console.log('Summary data received:', request.summaryData);
-    chrome.tabs.sendMessage(sender.tab.id, {
+    chrome.tabs.sendMessage(lastActiveTabId, {
       type: 'generateQuiz',
       text: request.summaryData,
     });

@@ -35,6 +35,11 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
       args: [info.selectionText],
     });
 
+    chrome.runtime.sendMessage({
+      type: 'displaySelectedText',
+      text: info.selectionText,
+    });
+
     /// Take the selected text and send it to the Summarizer API to generate a summary of the text
     // Step 1: Send text to generate a summary
     chrome.tabs.sendMessage(tab.id, {
@@ -82,8 +87,13 @@ chrome.runtime.onMessage.addListener(async (request, sender, sendResponse) => {
       });
 
       console.log('sending message to sidepanel.js to update ui');
-      // Send a message to the UI to update the quiz
-      chrome.tabs.sendMessage(sender.tab.id, {
+      // // Send a message to the UI to update the quiz
+      // chrome.tabs.sendMessage(sender.tab.id, {
+      //   type: 'quizUpdated',
+      // });
+
+      // Temporarily sending to popup.js
+      chrome.runtime.sendMessage({
         type: 'quizUpdated',
       });
       console.log('sent message to sidepanel.js to update ui');

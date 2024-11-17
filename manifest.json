@@ -14,7 +14,7 @@
     "service_worker": "background.js"
   },
   "action": {
-    "default_popup": "ui/sidepanel/landing.html",
+    "default_popup": "ui/sidepanel/sidepanel.html",
     "default_icon": "icons/icon48.png"
   },
   "side_panel": {

@@ -1,53 +1,99 @@
-// sidepanel.js
-import { displayQuiz } from '../quiz/create_quiz.js';
+const quizContainer = document.getElementById('quiz');
+const submitButton = document.getElementById('submit');
 
-// IDK if this is still being used? - Listen for new quiz data being stored
+function buildQuiz(quizData) {
+  const output = [];
+  console.log('log in popup.js', quizData);
+
+  quizData.questions.forEach((currentQuestion, questionNumber) => {
+    const options = [];
+
+    // Generate each option for the question
+    Object.entries(currentQuestion.options).forEach(([key, option]) => {
+      options.push(
+        `<li>
+          <label>
+            <input type="radio" name="question${questionNumber}" value="${key}">
+            ${option}
+          </label>
+        </li>`
+      );
+    });
+
+    output.push(
+      `<div class="question">
+        <p>${currentQuestion.question}</p>
+        <ul class="options">
+          ${options.join('')}
+        </ul>
+      </div>`
+    );
+  });
+
+  quizContainer.innerHTML = output.join('');
+}
+
+function showResults(quizData) {
+  quizData.questions.forEach((currentQuestion, questionNumber) => {
+    const selector = `input[name=question${questionNumber}]:checked`;
+    const userAnswer = document.querySelector(selector);
+    const correctAnswer = quizData.answerKey[questionNumber];
+    const options = document.querySelectorAll(
+      `input[name=question${questionNumber}]`
+    );
+
+    // Highlight each option based on correctness
+    options.forEach((option) => {
+      if (option.value === correctAnswer) {
+        // Correct answer highlighted in green
+        option.parentElement.style.color = 'green';
+      } else if (
+        userAnswer &&
+        option === userAnswer &&
+        userAnswer.value !== correctAnswer
+      ) {
+        // Incorrect answer highlighted in red
+        option.parentElement.style.color = 'red';
+      }
+    });
+  });
+
+  alert(
+    `Quiz completed! Check the highlights for correct and incorrect answers.`
+  );
+}
+
+// Function to display highlighted/selected text
+function displaySelectedText(text) {
+  const quizContainer = document.getElementById('quiz');
+  if (quizContainer) {
+    // Truncate text if it's longer than 600 characters
+    const truncatedText =
+      text.length > 600 ? text.substring(0, 600) + '...' : text;
+
+    quizContainer.innerHTML = `
+      <div class="highlighted-text">
+        <h3>Selected Text:</h3>
+        <div class="text-content">${truncatedText}</div>
+        <div class="text-stats">Characters: ${text.length}</div>
+        <div class="loading-message">Generating quiz...</div>
+      </div>
+    `;
+  }
+}
+
+// Modify your message listener to handle the highlighted text
 chrome.runtime.onMessage.addListener(async (request, sender, sendResponse) => {
-  console.log('Received message in sidePanel.js:', request);
-  if (request.type === 'quizUpdated') {
-    // Refresh the side panel with the new quiz data
-    openSidePanel();
+  console.log('Received message in popup.js:', request);
+  if (request.type === 'displaySelectedText') {
+    displaySelectedText(request.text);
+  } else if (request.type === 'quizUpdated') {
+    // Your existing quiz display logic
+    chrome.storage.local.get(['quizResult'], (result) => {
+      const quizData = result.quizResult;
+      if (quizData) {
+        buildQuiz(quizData);
+      }
+    });
   }
 });
-
-function openSidePanel() {
-  let sidePanel = document.getElementById('myExtensionSidePanel');
-  if (!sidePanel) {
-    // Create the side panel container if it doesn't exist
-    sidePanel = document.createElement('div');
-    sidePanel.id = 'myExtensionSidePanel';
-    Object.assign(sidePanel.style, {
-      position: 'fixed',
-      top: '0',
-      right: '0',
-      width: '400px',
-      height: '100%',
-      backgroundColor: '#fff',
-      zIndex: '9999',
-      boxShadow: '-2px 0 5px rgba(0,0,0,0.3)',
-      overflowY: 'auto',
-      padding: '20px',
-      borderLeft: '1px solid #ccc',
-      fontFamily: 'Arial, sans-serif',
-    });
-    document.body.appendChild(sidePanel);
-  }
-
-  // Replace the content of the side panel with the new quiz
-  sidePanel.innerHTML = `
-    <button id="closeSidePanel" style="float:right;">&times;</button>
-    <h2>Quiz</h2>
-    <div id="quizContainer">Loading quiz...</div>
-  `;
-
-  // Retrieve and display the new quiz data
-  chrome.storage.local.get(['quizResult'], (result) => {
-    const quizData = result.quizResult;
-    if (quizData) {
-      displayQuiz(quizData);
-    } else {
-      document.getElementById('quizContainer').innerText =
-        'Quiz data not available.';
-    }
-  });
-}

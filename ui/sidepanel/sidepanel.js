@@ -80,7 +80,6 @@ function displaySelectedText(text) {
         <h3>Selected Text:</h3>
         <div class="text-content">${truncatedText}</div>
         <div class="text-stats">Characters: ${text.length}</div>
-        <div class="loading-message">Generating quiz...</div>
       </div>
     `;
   }

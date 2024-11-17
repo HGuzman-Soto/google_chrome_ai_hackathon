@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>StateManager Test</title>
+  <script type="module" src="test_state_manager.js" defer></script>
+  <style>
+    #app {
+      margin: 20px;
+      padding: 20px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      font-family: Arial, sans-serif;
+    }
+    .control-buttons {
+      margin: 20px 0;
+    }
+    .control-buttons button {
+      margin-right: 10px;
+      padding: 10px 20px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <h1>StateManager Test</h1>
+  <div id="app">Initial State</div>
+  <div class="control-buttons">
+    <button data-state="INSTRUCTIONS">Instructions</button>
+    <button data-state="TEXT_INPUT">Text Input</button>
+    <button data-state="GENERATING_QUIZ">Generating Quiz</button>
+    <button data-state="QUIZ_SCREEN">Quiz Screen</button>
+    <button data-state="QUIZ_RESULTS_HOME">Quiz Results</button>
+    <button data-state="ERROR_SCREEN">Error Screen</button>
+  </div>
+</body>
+</html>

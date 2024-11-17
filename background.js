@@ -11,7 +11,7 @@ chrome.runtime.onInstalled.addListener(() => {
 chrome.tabs.onUpdated.addListener(async (tabId, info, tab) => {
   await chrome.sidePanel.setOptions({
     tabId,
-    path: 'ui/sidepanel/sidepanel.html',
+    path: 'ui/sidepanel/landing.html',
     enabled: true,
   });
 

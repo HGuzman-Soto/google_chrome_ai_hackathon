@@ -63,15 +63,6 @@ function showResults(quizData) {
   );
 }
 
-// Load quiz data from Chrome storage and initialize the quiz
-chrome.storage.local.get(['quizResult'], (result) => {
-  if (result.quizResult) {
-    buildQuiz(result.quizResult); // Populate the quiz with stored data
-  } else {
-    quizContainer.innerHTML = '<p>No quiz data available.</p>';
-  }
-});
-
 // Function to display highlighted/selected text
 function displaySelectedText(text) {
   const quizContainer = document.getElementById('quiz');
@@ -79,10 +70,12 @@ function displaySelectedText(text) {
     // Truncate text if it's longer than 600 characters
     const truncatedText =
       text.length > 600 ? text.substring(0, 600) + '...' : text;
+
     quizContainer.innerHTML = `
       <div class="highlighted-text">
         <h3>Selected Text:</h3>
-        <div class="text-content">${text}</div>
+        <div class="text-content">${truncatedText}</div>
+        <div class="text-stats">Characters: ${text.length}</div>
         <div class="loading-message">Generating quiz...</div>
       </div>
     `;
@@ -92,7 +85,6 @@ function displaySelectedText(text) {
 // Modify your message listener to handle the highlighted text
 chrome.runtime.onMessage.addListener(async (request, sender, sendResponse) => {
   console.log('Received message in popup.js:', request);
-
   if (request.type === 'displaySelectedText') {
     displaySelectedText(request.text);
   } else if (request.type === 'quizUpdated') {
